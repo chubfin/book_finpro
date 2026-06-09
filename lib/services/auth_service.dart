@@ -6,6 +6,7 @@ class AuthService {
   static const _isLoggedInKey = 'is_logged_in';
   static const _usernameKey = 'username';
   static const _usersKey = 'registered_users';
+  static const _profilePhotoPrefix = 'profile_photo_';
   static late final SharedPreferences _preferences;
 
   static Future<void> init() async {
@@ -14,6 +15,8 @@ class AuthService {
 
   static bool get isLoggedIn => _preferences.getBool(_isLoggedInKey) ?? false;
   static String get username => _preferences.getString(_usernameKey) ?? '';
+  static String get profilePhotoPath =>
+      _preferences.getString('$_profilePhotoPrefix$username') ?? '';
 
   static Map<String, String> get _users {
     final raw = _preferences.getString(_usersKey);
@@ -51,5 +54,10 @@ class AuthService {
   static Future<void> logout() async {
     await _preferences.setBool(_isLoggedInKey, false);
     await _preferences.remove(_usernameKey);
+  }
+
+  static Future<void> saveProfilePhotoPath(String path) async {
+    if (username.isEmpty) return;
+    await _preferences.setString('$_profilePhotoPrefix$username', path);
   }
 }

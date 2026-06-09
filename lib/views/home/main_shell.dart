@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../controllers/navigation_controller.dart';
 import '../library/library_page.dart';
+import '../places/book_places_page.dart';
 import '../profile/profile_page.dart';
 import 'home_page.dart';
 
@@ -12,7 +13,12 @@ class MainShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(NavigationController());
-    final pages = const [HomePage(), LibraryPage(), ProfilePage()];
+    final pages = const [
+      HomePage(),
+      LibraryPage(),
+      BookPlacesPage(),
+      ProfilePage(),
+    ];
 
     return Obx(
       () => Scaffold(
@@ -32,6 +38,11 @@ class MainShell extends StatelessWidget {
               icon: Icon(Icons.bookmark_border_rounded),
               selectedIcon: Icon(Icons.bookmark_rounded),
               label: 'Library',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.map_outlined),
+              selectedIcon: Icon(Icons.map_rounded),
+              label: 'Places',
             ),
             NavigationDestination(
               icon: Icon(Icons.person_outline_rounded),

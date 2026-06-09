@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../controllers/library_controller.dart';
 import '../routes/app_routes.dart';
@@ -6,6 +7,8 @@ import '../services/auth_service.dart';
 
 class AuthController extends GetxController {
   final username = AuthService.username.obs;
+  final profilePhotoPath = AuthService.profilePhotoPath.obs;
+  final ImagePicker _imagePicker = ImagePicker();
 
   Future<void> login(String usernameValue, String passwordValue) async {
     final cleanUsername = usernameValue.trim();
@@ -25,6 +28,7 @@ class AuthController extends GetxController {
 
     await AuthService.login(cleanUsername, cleanPassword);
     username.value = cleanUsername;
+    profilePhotoPath.value = AuthService.profilePhotoPath;
     _refreshLibrary();
     Get.offAllNamed(AppRoutes.main);
   }
@@ -55,8 +59,21 @@ class AuthController extends GetxController {
   Future<void> logout() async {
     await AuthService.logout();
     username.value = '';
+    profilePhotoPath.value = '';
     _refreshLibrary();
     Get.offAllNamed(AppRoutes.login);
+  }
+
+  Future<void> pickProfilePhoto() async {
+    final image = await _imagePicker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+      maxWidth: 900,
+    );
+    if (image == null) return;
+
+    await AuthService.saveProfilePhotoPath(image.path);
+    profilePhotoPath.value = image.path;
   }
 
   void _refreshLibrary() {

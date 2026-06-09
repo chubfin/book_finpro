@@ -337,7 +337,6 @@ class _ProgressEditorState extends State<_ProgressEditor> {
 
                   // Panggil update progress ke Hive
                   controller.updateProgress(widget.book, currentPage);
-
                 },
                 icon: const Icon(Icons.save_rounded),
               ),
