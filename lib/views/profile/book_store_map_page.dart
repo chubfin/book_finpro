@@ -49,13 +49,16 @@ class _BookStoreMapPageState extends State<BookStoreMapPage> {
     final double maxLng = widget.userLng + radius;
 
     // MENGGUNAKAN SERVER KUMI SYSTEMS (Lebih responsif & jarang overload dibanding server utama)
-    final String url = 'https://overpass.kumi.systems/api/interpreter?data=[out:json];'
+    final String url =
+        'https://overpass.kumi.systems/api/interpreter?data=[out:json];'
         '(node["shop"="books"]($minLat,$minLng,$maxLat,$maxLng);'
         'node["amenity"="library"]($minLat,$minLng,$maxLat,$maxLng););out;';
 
     try {
       // Diberi batas waktu 12 detik agar tidak loading selamanya jika internet lambat
-      final response = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 12));
+      final response = await http
+          .get(Uri.parse(url))
+          .timeout(const Duration(seconds: 12));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -82,8 +85,8 @@ class _BookStoreMapPageState extends State<BookStoreMapPage> {
           final lat = element['lat'];
           final lon = element['lon'];
           final tags = element['tags'];
-          final name = tags != null && tags['name'] != null 
-              ? tags['name'] 
+          final name = tags != null && tags['name'] != null
+              ? tags['name']
               : (tags?['shop'] == 'books' ? 'Toko Buku' : 'Perpustakaan');
 
           tempMarkers.add(
@@ -125,7 +128,9 @@ class _BookStoreMapPageState extends State<BookStoreMapPage> {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Gagal memuat tempat terdekat. Pastikan koneksi internet aktif."),
+            content: Text(
+              "Gagal memuat tempat terdekat. Pastikan koneksi internet aktif.",
+            ),
             backgroundColor: const Color(0xFFB85F73),
           ),
         );
@@ -153,7 +158,7 @@ class _BookStoreMapPageState extends State<BookStoreMapPage> {
               MarkerLayer(markers: _markers),
             ],
           ),
-          
+
           // Loading Overlay Widget
           if (_isLoading)
             const Center(

@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 
+import '../controllers/library_controller.dart';
 import '../routes/app_routes.dart';
 import '../services/auth_service.dart';
 
@@ -24,6 +25,7 @@ class AuthController extends GetxController {
 
     await AuthService.login(cleanUsername, cleanPassword);
     username.value = cleanUsername;
+    _refreshLibrary();
     Get.offAllNamed(AppRoutes.main);
   }
 
@@ -53,6 +55,13 @@ class AuthController extends GetxController {
   Future<void> logout() async {
     await AuthService.logout();
     username.value = '';
+    _refreshLibrary();
     Get.offAllNamed(AppRoutes.login);
+  }
+
+  void _refreshLibrary() {
+    if (Get.isRegistered<LibraryController>()) {
+      Get.find<LibraryController>().refreshForCurrentUser();
+    }
   }
 }

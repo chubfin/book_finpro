@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'dart:ui'; // Wajib untuk efek blur (ImageFilter)
 
 import '../../controllers/library_controller.dart';
 import '../../models/book.dart';
@@ -11,28 +10,32 @@ class DetailPage extends StatelessWidget {
   const DetailPage({super.key});
 
   // 🛠️ Perbaikan: Fungsi snackbar dipindahkan ke static agar bisa diakses dengan aman dari sub-widget
-  static void showBlurredSnackbar({required String title, required String message, required IconData icon}) {
+  static void showBlurredSnackbar({
+    required String title,
+    required String message,
+    required IconData icon,
+  }) {
     Get.snackbar(
       title,
       message,
-      snackPosition: SnackPosition.TOP, 
+      snackPosition: SnackPosition.TOP,
       margin: const EdgeInsets.all(15),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-      
-      backgroundColor: Colors.white.withValues(alpha: 0.85), 
-      barBlur: 15, 
-      colorText: const Color(0xFF4B3B3E), 
-      
+
+      backgroundColor: Colors.white.withValues(alpha: 0.85),
+      barBlur: 15,
+      colorText: const Color(0xFF4B3B3E),
+
       icon: Icon(icon, color: const Color(0xFF4B3B3E)),
       shouldIconPulse: false,
       duration: const Duration(seconds: 3),
-      
+
       boxShadows: [
         BoxShadow(
           color: Colors.black.withValues(alpha: 0.08),
           blurRadius: 12,
           offset: const Offset(0, 5),
-        )
+        ),
       ],
     );
   }
@@ -59,7 +62,9 @@ class DetailPage extends StatelessWidget {
           Text(
             book.title,
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w900),
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 8),
           Text(
@@ -71,7 +76,7 @@ class DetailPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 18),
-          
+
           Obx(() {
             // Memastikan widget ini reaktif terhadap list di libraryController
             libraryController.books.length;
@@ -101,7 +106,7 @@ class DetailPage extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 18),
-                
+
                 if (book.category.isNotEmpty ||
                     book.publisher.isNotEmpty ||
                     book.publishedDate.isNotEmpty)
@@ -110,7 +115,10 @@ class DetailPage extends StatelessWidget {
                     runSpacing: 8,
                     children: [
                       if (book.category.isNotEmpty)
-                        _MetaChip(icon: Icons.category_rounded, label: book.category),
+                        _MetaChip(
+                          icon: Icons.category_rounded,
+                          label: book.category,
+                        ),
                       if (book.publisher.isNotEmpty)
                         _MetaChip(
                           icon: Icons.apartment_rounded,
@@ -154,12 +162,12 @@ class DetailPage extends StatelessWidget {
                         icon: const Icon(Icons.add_rounded),
                         label: const Text('Add To Library'),
                       ),
-                
+
                 if (isAdded && book.pageCount > 0) ...[
                   const SizedBox(height: 18),
                   _ProgressEditor(book: libraryBook),
                 ],
-                
+
                 if (isAdded && book.pageCount == 0) ...[
                   const SizedBox(height: 18),
                   Container(
@@ -187,7 +195,9 @@ class DetailPage extends StatelessWidget {
           const SizedBox(height: 22),
           Text(
             'Description',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 8),
           Text(
@@ -236,7 +246,7 @@ class _MetaChip extends StatelessWidget {
 class _ProgressEditor extends StatefulWidget {
   final LibraryBook book;
 
-  const _ProgressEditor({super.key, required this.book});
+  const _ProgressEditor({required this.book});
 
   @override
   State<_ProgressEditor> createState() => _ProgressEditorState();
@@ -248,7 +258,9 @@ class _ProgressEditorState extends State<_ProgressEditor> {
   @override
   void initState() {
     super.initState();
-    _pageController = TextEditingController(text: widget.book.currentPage.toString());
+    _pageController = TextEditingController(
+      text: widget.book.currentPage.toString(),
+    );
   }
 
   @override
@@ -285,7 +297,7 @@ class _ProgressEditorState extends State<_ProgressEditor> {
             style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17),
           ),
           const SizedBox(height: 12),
-          
+
           LinearProgressIndicator(
             minHeight: 9,
             borderRadius: BorderRadius.circular(99),
@@ -296,7 +308,10 @@ class _ProgressEditorState extends State<_ProgressEditor> {
           const SizedBox(height: 8),
           Text(
             '${widget.book.currentPage} / ${widget.book.pageCount} pages   ${widget.book.progressPercent}%',
-            style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF3B2D2F)),
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF3B2D2F),
+            ),
           ),
           const SizedBox(height: 12),
           Row(
@@ -319,15 +334,10 @@ class _ProgressEditorState extends State<_ProgressEditor> {
                 ),
                 onPressed: () {
                   final currentPage = int.tryParse(_pageController.text) ?? 0;
-                  
+
                   // Panggil update progress ke Hive
                   controller.updateProgress(widget.book, currentPage);
-                  
-                  DetailPage.showBlurredSnackbar(
-                    title: 'Progress Saved',
-                    message: 'Progress membaca berhasil diperbarui!',
-                    icon: Icons.save_rounded,
-                  );
+
                 },
                 icon: const Icon(Icons.save_rounded),
               ),

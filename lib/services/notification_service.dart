@@ -27,6 +27,19 @@ class NotificationService {
           AndroidFlutterLocalNotificationsPlugin
         >()
         ?.createNotificationChannel(channel);
+
+    const eventChannel = AndroidNotificationChannel(
+      'reading_events',
+      'Reading Events',
+      description: 'Notifications based on reading progress and status.',
+      importance: Importance.high,
+    );
+
+    await _notifications
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
+        ?.createNotificationChannel(eventChannel);
   }
 
   static Future<void> requestPermission() async {
@@ -58,28 +71,30 @@ class NotificationService {
     );
   }
 
-  // Tambahkan fungsi ini di dalam class NotificationService kamu
-static Future<void> showInstantNotification({required String title, required String body}) async {
-  await requestPermission(); // Pastikan izin notifikasi aktif
-  
-  const androidDetails = AndroidNotificationDetails(
-    'reading_reminder', // Harus sama dengan id channel di init()
-    'Reading Reminder',
-    channelDescription: 'Daily reminder to continue reading books.',
-    importance: Importance.high,
-    priority: Priority.high,
-    playSound: true,
-  );
+  static Future<void> showInstantNotification({
+    required String title,
+    required String body,
+  }) async {
+    await requestPermission();
 
-  const notificationDetails = NotificationDetails(android: androidDetails);
+    const androidDetails = AndroidNotificationDetails(
+      'reading_events',
+      'Reading Events',
+      channelDescription: 'Notifications based on reading progress and status.',
+      importance: Importance.high,
+      priority: Priority.high,
+      playSound: true,
+    );
 
-  await _notifications.show(
-    DateTime.now().millisecond, // ID unik pakai milidetik biar ga tumpang tindih
-    title,
-    body,
-    notificationDetails,
-  );
-}
+    const notificationDetails = NotificationDetails(android: androidDetails);
+
+    await _notifications.show(
+      DateTime.now().microsecondsSinceEpoch.remainder(2147483647),
+      title,
+      body,
+      notificationDetails,
+    );
+  }
 
   static tz.TZDateTime _nextReminderTime() {
     final now = tz.TZDateTime.now(tz.local);

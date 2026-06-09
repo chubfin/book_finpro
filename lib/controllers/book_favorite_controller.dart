@@ -4,7 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 class BookFavoriteController extends GetxController {
   // Nama Box Hive yang digunakan
   final String _boxName = 'favorite_books_box';
-  
+
   // List reaktif untuk menampung data buku favorit
   var favoriteBooks = <Map<String, dynamic>>[].obs;
 
@@ -26,7 +26,7 @@ class BookFavoriteController extends GetxController {
   // Ambil semua data dari Hive ke dalam List reaktif GetX
   void loadFavorites() {
     final box = Hive.box(_boxName);
-    
+
     // Mengonversi data Hive menjadi List<Map> yang bisa dibaca reaktif
     final data = box.keys.map((key) {
       final item = box.get(key);
@@ -42,7 +42,12 @@ class BookFavoriteController extends GetxController {
   }
 
   // Tambah atau Hapus Favorit (Toggle System)
-  void toggleFavorite(String bookId, String title, String author, String image) {
+  void toggleFavorite(
+    String bookId,
+    String title,
+    String author,
+    String image,
+  ) {
     final box = Hive.box(_boxName);
 
     if (box.containsKey(bookId)) {
@@ -54,17 +59,13 @@ class BookFavoriteController extends GetxController {
       );
     } else {
       // Jika belum ada, tambahkan ke favorit
-      box.put(bookId, {
-        "title": title,
-        "author": author,
-        "image": image,
-      });
+      box.put(bookId, {"title": title, "author": author, "image": image});
       Get.rawSnackbar(
         message: "$title ditambahkan ke favorit",
         duration: const Duration(seconds: 1),
       );
     }
-    
+
     // Perbarui list reaktif setelah data di Hive berubah
     loadFavorites();
   }

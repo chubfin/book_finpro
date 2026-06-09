@@ -36,9 +36,9 @@ class HomePage extends StatelessWidget {
               () => Text(
                 'Hi, ${authController.username.value}',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w900,
-                      color: const Color(0xFF3B2D2F),
-                    ),
+                  fontWeight: FontWeight.w900,
+                  color: const Color(0xFF3B2D2F),
+                ),
               ),
             ),
 
@@ -47,21 +47,29 @@ class HomePage extends StatelessWidget {
             // 🔍 FITUR BARU: Search Bar Komponen
             TextField(
               onChanged: (value) {
-                bookController.searchQuery.value = value; // Update query pencarian
+                bookController.searchQuery.value =
+                    value; // Update query pencarian
               },
               decoration: InputDecoration(
                 hintText: 'Search by title or author...',
-                prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF9B5364)),
-                suffixIcon: Obx(() => bookController.searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear_rounded),
-                        onPressed: () {
-                          // Tombol X untuk reset kolom pencarian
-                          bookController.searchQuery.value = '';
-                          FocusScope.of(context).unfocus(); // Sembunyikan keyboard
-                        },
-                      )
-                    : const SizedBox.shrink()),
+                prefixIcon: const Icon(
+                  Icons.search_rounded,
+                  color: Color(0xFF9B5364),
+                ),
+                suffixIcon: Obx(
+                  () => bookController.searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear_rounded),
+                          onPressed: () {
+                            // Tombol X untuk reset kolom pencarian
+                            bookController.searchQuery.value = '';
+                            FocusScope.of(
+                              context,
+                            ).unfocus(); // Sembunyikan keyboard
+                          },
+                        )
+                      : const SizedBox.shrink(),
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(15),
                   borderSide: const BorderSide(color: Color(0xFFF0DDD5)),
@@ -72,7 +80,10 @@ class HomePage extends StatelessWidget {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(15),
-                  borderSide: const BorderSide(color: Color(0xFF9B5364), width: 1.5),
+                  borderSide: const BorderSide(
+                    color: Color(0xFF9B5364),
+                    width: 1.5,
+                  ),
                 ),
                 filled: true,
                 fillColor: const Color(0xFFFFFCF8),
@@ -100,7 +111,8 @@ class HomePage extends StatelessWidget {
                         selectedColor: const Color(0xFFFFD6E7),
                         checkmarkColor: const Color(0xFFE91E63),
                         onSelected: (_) {
-                          bookController.searchQuery.value = ''; // Reset search jika ganti kategori
+                          bookController.searchQuery.value =
+                              ''; // Reset search jika ganti kategori
                           bookController.changeCategory(category);
                         },
                       ),
@@ -145,7 +157,10 @@ class HomePage extends StatelessWidget {
                   child: Center(
                     child: Text(
                       'No books found matching your criteria.',
-                      style: TextStyle(color: Color(0xFF73656A), fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        color: Color(0xFF73656A),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 );

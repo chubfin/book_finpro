@@ -39,27 +39,29 @@ class BookController extends GetxController {
   }
 
   // --- Tambahkan ini di dalam class BookController ---
-  
+
   // 1. Variabel penampung teks pencarian secara reaktif
   var searchQuery = ''.obs;
-  
+
   // 2. Getter untuk menyaring buku berdasarkan judul atau author
   List<Book> get filteredBooks {
     if (searchQuery.isEmpty) {
       return books; // Jika kolom pencarian kosong, kembalikan semua buku dari API
     }
-    
+
     final query = searchQuery.value.toLowerCase();
     return books.where((book) {
       final matchTitle = book.title.toLowerCase().contains(query);
-      
+
       // Sesuaikan pengecekan author dengan struktur data model Book kamu
       // Jika book.authors berupa List<String>:
-      final matchAuthor = book.authors.any((author) => author.toLowerCase().contains(query));
-      
+      final matchAuthor = book.authors.any(
+        (author) => author.toLowerCase().contains(query),
+      );
+
       // ATAU jika book.authorText/book.authors berupa String tunggal, gunakan baris bawah ini:
       // final matchAuthor = book.authors.toLowerCase().contains(query);
-  
+
       return matchTitle || matchAuthor;
     }).toList();
   }
