@@ -10,6 +10,33 @@ import '../../widgets/book_cover.dart';
 class DetailPage extends StatelessWidget {
   const DetailPage({super.key});
 
+  // 🛠️ Perbaikan: Fungsi snackbar dipindahkan ke static agar bisa diakses dengan aman dari sub-widget
+  static void showBlurredSnackbar({required String title, required String message, required IconData icon}) {
+    Get.snackbar(
+      title,
+      message,
+      snackPosition: SnackPosition.TOP, 
+      margin: const EdgeInsets.all(15),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+      
+      backgroundColor: Colors.white.withValues(alpha: 0.85), 
+      barBlur: 15, 
+      colorText: const Color(0xFF4B3B3E), 
+      
+      icon: Icon(icon, color: const Color(0xFF4B3B3E)),
+      shouldIconPulse: false,
+      duration: const Duration(seconds: 3),
+      
+      boxShadows: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.08),
+          blurRadius: 12,
+          offset: const Offset(0, 5),
+        )
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final argument = ModalRoute.of(context)?.settings.arguments;
@@ -32,9 +59,7 @@ class DetailPage extends StatelessWidget {
           Text(
             book.title,
             textAlign: TextAlign.center,
-            style: Theme.of(
-              context,
-            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w900),
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 8),
           Text(
@@ -48,6 +73,7 @@ class DetailPage extends StatelessWidget {
           const SizedBox(height: 18),
           
           Obx(() {
+            // Memastikan widget ini reaktif terhadap list di libraryController
             libraryController.books.length;
             final libraryBook = libraryController.findById(book.id);
             final isAdded = libraryBook != null;
@@ -99,7 +125,6 @@ class DetailPage extends StatelessWidget {
                   ),
                 const SizedBox(height: 18),
 
-                // TOMBOL UTAMA DENGAN SNACKBAR BLUR DI ATAS
                 isAdded
                     ? OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
@@ -108,9 +133,7 @@ class DetailPage extends StatelessWidget {
                         ),
                         onPressed: () {
                           libraryController.deleteBook(book.id);
-                          
-                          // POP UP BLUR DI ATAS: Buku Dihapus
-                          _showBlurredSnackbar(
+                          DetailPage.showBlurredSnackbar(
                             title: 'Library Updated',
                             message: '${book.title} berhasil dihapus.',
                             icon: Icons.delete_sweep_rounded,
@@ -122,9 +145,7 @@ class DetailPage extends StatelessWidget {
                     : FilledButton.icon(
                         onPressed: () {
                           libraryController.addBook(book);
-                          
-                          // POP UP BLUR DI ATAS: Buku Ditambah
-                          _showBlurredSnackbar(
+                          DetailPage.showBlurredSnackbar(
                             title: 'Success!',
                             message: '${book.title} ditambahkan ke Library.',
                             icon: Icons.check_circle_outline_rounded,
@@ -166,9 +187,7 @@ class DetailPage extends StatelessWidget {
           const SizedBox(height: 22),
           Text(
             'Description',
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 8),
           Text(
@@ -177,33 +196,6 @@ class DetailPage extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  void _showBlurredSnackbar({required String title, required String message, required IconData icon}) {
-    Get.snackbar(
-      title,
-      message,
-      snackPosition: SnackPosition.TOP, // Tetap di atas
-      margin: const EdgeInsets.all(15),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-      
-      // DESAIN BARU: Menggunakan kombinasi opacity dan barBlur bawaan GetX
-      backgroundColor: Colors.white.withValues(alpha: 0.85), // Putih transparan elegan
-      barBlur: 15, // Efek blur native ke elemen di belakang snackbar
-      colorText: const Color(0xFF4B3B3E), // Teks gelap kontras
-      
-      icon: Icon(icon, color: const Color(0xFF4B3B3E)),
-      shouldIconPulse: false,
-      duration: const Duration(seconds: 3),
-      
-      boxShadows: [
-        BoxShadow(
-          color: Colors.black.withValues(alpha: 0.08),
-          blurRadius: 12,
-          offset: const Offset(0, 5),
-        )
-      ],
     );
   }
 
@@ -241,15 +233,42 @@ class _MetaChip extends StatelessWidget {
   }
 }
 
-class _ProgressEditor extends StatelessWidget {
+class _ProgressEditor extends StatefulWidget {
   final LibraryBook book;
 
-  const _ProgressEditor({required this.book});
+  const _ProgressEditor({super.key, required this.book});
+
+  @override
+  State<_ProgressEditor> createState() => _ProgressEditorState();
+}
+
+class _ProgressEditorState extends State<_ProgressEditor> {
+  late TextEditingController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = TextEditingController(text: widget.book.currentPage.toString());
+  }
+
+  @override
+  void didUpdateWidget(covariant _ProgressEditor oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Jika data buku berubah dari controller, update isi TextField
+    if (oldWidget.book.currentPage != widget.book.currentPage) {
+      _pageController.text = widget.book.currentPage.toString();
+    }
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<LibraryController>();
-    final pageController = TextEditingController(text: book.currentPage.toString());
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -270,33 +289,41 @@ class _ProgressEditor extends StatelessWidget {
           LinearProgressIndicator(
             minHeight: 9,
             borderRadius: BorderRadius.circular(99),
-            value: book.progress,
+            value: widget.book.progress,
             backgroundColor: const Color(0xFFF0DDD5),
             valueColor: const AlwaysStoppedAnimation(Color(0xFF8CA07C)),
           ),
           const SizedBox(height: 8),
           Text(
-            '${book.currentPage} / ${book.pageCount} pages   ${book.progressPercent}%',
+            '${widget.book.currentPage} / ${widget.book.pageCount} pages   ${widget.book.progressPercent}%',
+            style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF3B2D2F)),
           ),
           const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
                 child: TextField(
-                  controller: pageController,
+                  controller: _pageController,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Current Page'),
+                  decoration: const InputDecoration(
+                    labelText: 'Current Page',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
               IconButton.filled(
                 tooltip: 'Save progress',
+                style: IconButton.styleFrom(
+                  backgroundColor: const Color(0xFF9B5364),
+                ),
                 onPressed: () {
-                  final currentPage = int.tryParse(pageController.text) ?? 0;
-                  controller.updateProgress(book, currentPage);
+                  final currentPage = int.tryParse(_pageController.text) ?? 0;
                   
-                  // POP UP BLUR DI ATAS: Progress Disimpan
-                  DetailPage()._showBlurredSnackbar(
+                  // Panggil update progress ke Hive
+                  controller.updateProgress(widget.book, currentPage);
+                  
+                  DetailPage.showBlurredSnackbar(
                     title: 'Progress Saved',
                     message: 'Progress membaca berhasil diperbarui!',
                     icon: Icons.save_rounded,
@@ -306,30 +333,7 @@ class _ProgressEditor extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          DropdownButtonFormField<String>(
-            value: book.status,
-            decoration: const InputDecoration(labelText: 'Status'),
-            items: BookStatus.values
-                .map(
-                  (status) => DropdownMenuItem(value: status, child: Text(status)),
-                )
-                .toList(),
-            onChanged: (status) {
-              if (status != null) {
-                controller.updateStatus(book, status);
-                
-                // POP UP BLUR DI ATAS: Status Diubah
-                DetailPage()._showBlurredSnackbar(
-                  title: 'Status Updated',
-                  message: 'Status buku diubah menjadi $status',
-                  icon: Icons.published_with_changes_rounded,
-                );
-              }
-            },
-          ),
         ],
-        
       ),
     );
   }

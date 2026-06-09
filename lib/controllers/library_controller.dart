@@ -59,14 +59,17 @@ class LibraryController extends GetxController {
     if (newPage >= 0 && newPage <= book.pageCount) {
       book.currentPage = newPage;
       
-      // Auto-complete jika halaman yang dibaca sudah mentok
+      // Pastikan membandingkan dengan class BookStatus bawaan modelmu
       if (newPage == book.pageCount) {
-        book.status = 'Completed'; 
+        book.status = BookStatus.completed; 
+      } else if (newPage > 0) {
+        book.status = BookStatus.currentlyReading; // Harus 'Currently Reading'
+      } else if (newPage == 0) {
+        book.status = BookStatus.wantToRead; // Harus 'Want To Read'
       }
       
-      // Simpan perubahan object ke dalam database Hive agar permanen
       await _box.put(book.id, book);
-      books.refresh(); // Memberi tahu Obx di UI untuk menggambar ulang komponen
+      books.refresh(); // Memaksa semua Obx di UI untuk menggambar ulang
     }
   }
 
