@@ -21,7 +21,6 @@ class HomePage extends StatelessWidget {
       'thriller',
       'self-improvement',
       'science',
-      'children',
       'poetry',
     ];
 
@@ -37,15 +36,52 @@ class HomePage extends StatelessWidget {
               () => Text(
                 'Hi, ${authController.username.value}',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w900,
-                  color: const Color(0xFF3B2D2F),
-                ),
+                      fontWeight: FontWeight.w900,
+                      color: const Color(0xFF3B2D2F),
+                    ),
               ),
             ),
 
             const SizedBox(height: 14),
 
-            // Bagian Kategori yang sudah diperbaiki lokasasi Obx-nya
+            // 🔍 FITUR BARU: Search Bar Komponen
+            TextField(
+              onChanged: (value) {
+                bookController.searchQuery.value = value; // Update query pencarian
+              },
+              decoration: InputDecoration(
+                hintText: 'Search by title or author...',
+                prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF9B5364)),
+                suffixIcon: Obx(() => bookController.searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear_rounded),
+                        onPressed: () {
+                          // Tombol X untuk reset kolom pencarian
+                          bookController.searchQuery.value = '';
+                          FocusScope.of(context).unfocus(); // Sembunyikan keyboard
+                        },
+                      )
+                    : const SizedBox.shrink()),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                  borderSide: const BorderSide(color: Color(0xFFF0DDD5)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                  borderSide: const BorderSide(color: Color(0xFFF0DDD5)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                  borderSide: const BorderSide(color: Color(0xFF9B5364), width: 1.5),
+                ),
+                filled: true,
+                fillColor: const Color(0xFFFFFCF8),
+              ),
+            ),
+
+            const SizedBox(height: 18),
+
+            // Bagian Kategori
             SizedBox(
               height: 45,
               child: ListView.builder(
@@ -64,6 +100,7 @@ class HomePage extends StatelessWidget {
                         selectedColor: const Color(0xFFFFD6E7),
                         checkmarkColor: const Color(0xFFE91E63),
                         onSelected: (_) {
+                          bookController.searchQuery.value = ''; // Reset search jika ganti kategori
                           bookController.changeCategory(category);
                         },
                       ),
@@ -99,10 +136,25 @@ class HomePage extends StatelessWidget {
                 );
               }
 
+              // 🌟 AMBIL DATA YANG SUDAH DISARING 🌟
+              final displayBooks = bookController.filteredBooks;
+
+              if (displayBooks.isEmpty) {
+                return const Padding(
+                  padding: EdgeInsets.only(top: 40),
+                  child: Center(
+                    child: Text(
+                      'No books found matching your criteria.',
+                      style: TextStyle(color: Color(0xFF73656A), fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                );
+              }
+
               return GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: bookController.books.length,
+                itemCount: displayBooks.length,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   crossAxisSpacing: 12,
@@ -110,7 +162,7 @@ class HomePage extends StatelessWidget {
                   childAspectRatio: 0.62,
                 ),
                 itemBuilder: (context, index) {
-                  final book = bookController.books[index];
+                  final book = displayBooks[index];
 
                   return BookCard(
                     book: book,

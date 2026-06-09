@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../controllers/auth_controller.dart';
 import '../../controllers/library_controller.dart';
 import '../../controllers/location_controller.dart';
+import 'book_store_map_page.dart'; // Import halaman map baru
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -51,6 +52,8 @@ class ProfilePage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 18),
+          
+          // ================= CARD LBS DIUBAH DI SINI =================
           Obx(() {
             final position = locationController.currentPosition.value;
             final hasLocation = position != null;
@@ -97,6 +100,8 @@ class ProfilePage extends StatelessWidget {
                     ),
                   ],
                   const SizedBox(height: 12),
+                  
+                  // Tombol 1: Mengambil Lokasi GPS Perangkat
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
@@ -113,10 +118,34 @@ class ProfilePage extends StatelessWidget {
                       label: const Text('Get Current Location'),
                     ),
                   ),
+                  
+                  // Tambahan Tombol 2: Membuka Google Maps jika Lokasi Sudah Ada
+                  if (hasLocation) ...[
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: const Color(0xFF9B5364),
+                        ),
+                        onPressed: () {
+                          // Berpindah ke halaman map dengan membawa koordinat GPS user
+                          Get.to(() => BookStoreMapPage(
+                                userLat: position.latitude,
+                                userLng: position.longitude,
+                              ));
+                        },
+                        icon: const Icon(Icons.map_rounded),
+                        label: const Text('Cari Tempat Beli & Baca Buku'),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             );
           }),
+          // =========================================================
+
           const SizedBox(height: 18),
           Obx(
             () => Column(

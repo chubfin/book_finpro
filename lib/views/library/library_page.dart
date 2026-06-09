@@ -18,16 +18,18 @@ class LibraryPage extends StatelessWidget {
       appBar: AppBar(title: const Text('My Library')),
       body: Obx(
         () => ListView(
-          padding: const EdgeInsets.fromLTRB(18, 0, 18, 22),
+          padding: const EdgeInsets.fromLTRB(18, 4, 18, 22),
           children: [
             _StatusSection(
               title: BookStatus.wantToRead,
               books: controller.byStatus(BookStatus.wantToRead),
             ),
+            const SizedBox(height: 10),
             _StatusSection(
               title: BookStatus.currentlyReading,
               books: controller.byStatus(BookStatus.currentlyReading),
             ),
+            const SizedBox(height: 10),
             _StatusSection(
               title: BookStatus.completed,
               books: controller.byStatus(BookStatus.completed),
@@ -51,6 +53,7 @@ class _StatusSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SectionHeader(title: title, subtitle: '${books.length} books'),
+        const SizedBox(height: 8),
         if (books.isEmpty)
           Container(
             width: double.infinity,
@@ -62,7 +65,7 @@ class _StatusSection extends StatelessWidget {
             ),
             child: const Text(
               'Belum ada buku di kategori ini.',
-              style: TextStyle(color: Color(0xFF73656A)),
+              style: TextStyle(color: Color(0xFF73656A), fontSize: 13),
             ),
           )
         else

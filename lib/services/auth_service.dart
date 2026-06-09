@@ -33,13 +33,13 @@ class AuthService {
 
     users[username] = password;
     await _preferences.setString(_usersKey, jsonEncode(users));
-    await login(username, password);
+    // tidak auto login — user harus login manual
     return true;
   }
 
   static bool canLogin(String username, String password) {
     final users = _users;
-    if (users.isEmpty) return true;
+    if (users.isEmpty) return false; // belum ada user → wajib register dulu
     return users[username] == password;
   }
 
@@ -49,7 +49,7 @@ class AuthService {
   }
 
   static Future<void> logout() async {
-    await _preferences.remove(_isLoggedInKey);
+    await _preferences.setBool(_isLoggedInKey, false);
     await _preferences.remove(_usernameKey);
   }
 }

@@ -57,9 +57,11 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Masuk untuk menyimpan buku favorit dan melacak progres membaca.',
-                    style: TextStyle(color: Color(0xFF73656A), height: 1.45),
+                  Text(
+                    'Masuk untuk melihat koleksi buku favoritmu.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: const Color(0xFF3B2D2F),
+                    ),
                   ),
                   const SizedBox(height: 28),
                   TextField(

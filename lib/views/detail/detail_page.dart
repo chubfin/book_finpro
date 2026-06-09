@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'dart:ui'; // Wajib untuk efek blur (ImageFilter)
 
 import '../../controllers/library_controller.dart';
 import '../../models/book.dart';
@@ -45,73 +46,118 @@ class DetailPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 18),
-          Row(
-            children: [
-              Expanded(
-                child: _InfoBox(
-                  icon: Icons.star_rounded,
-                  label: 'Rating',
-                  value: book.averageRating.toStringAsFixed(1),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _InfoBox(
-                  icon: Icons.auto_stories_rounded,
-                  label: 'Pages',
-                  value: '${book.pageCount}',
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          if (book.category.isNotEmpty ||
-              book.publisher.isNotEmpty ||
-              book.price.isNotEmpty ||
-              book.publishedDate.isNotEmpty)
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                if (book.category.isNotEmpty)
-                  _MetaChip(icon: Icons.category_rounded, label: book.category),
-                if (book.publisher.isNotEmpty)
-                  _MetaChip(
-                    icon: Icons.apartment_rounded,
-                    label: book.publisher,
-                  ),
-                if (book.price.isNotEmpty)
-                  _MetaChip(icon: Icons.sell_rounded, label: book.price),
-                if (book.publishedDate.isNotEmpty)
-                  _MetaChip(
-                    icon: Icons.event_rounded,
-                    label: book.publishedDate,
-                  ),
-              ],
-            ),
-          const SizedBox(height: 18),
-
+          
           Obx(() {
             libraryController.books.length;
-
             final libraryBook = libraryController.findById(book.id);
             final isAdded = libraryBook != null;
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                FilledButton.icon(
-                  onPressed: isAdded
-                      ? null
-                      : () => libraryController.addBook(book),
-                  icon: Icon(
-                    isAdded ? Icons.check_circle_rounded : Icons.add_rounded,
-                  ),
-                  label: Text(isAdded ? 'Added' : 'Add To Library'),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _InfoBox(
+                        icon: Icons.bookmark_added_rounded,
+                        label: 'Status',
+                        value: isAdded ? libraryBook.status : 'Not Added',
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _InfoBox(
+                        icon: Icons.auto_stories_rounded,
+                        label: 'Pages',
+                        value: book.pageCount > 0 ? '${book.pageCount}' : '-',
+                      ),
+                    ),
+                  ],
                 ),
-                if (libraryBook != null) ...[
+                const SizedBox(height: 18),
+                
+                if (book.category.isNotEmpty ||
+                    book.publisher.isNotEmpty ||
+                    book.publishedDate.isNotEmpty)
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      if (book.category.isNotEmpty)
+                        _MetaChip(icon: Icons.category_rounded, label: book.category),
+                      if (book.publisher.isNotEmpty)
+                        _MetaChip(
+                          icon: Icons.apartment_rounded,
+                          label: book.publisher,
+                        ),
+                      if (book.publishedDate.isNotEmpty)
+                        _MetaChip(
+                          icon: Icons.event_rounded,
+                          label: book.publishedDate,
+                        ),
+                    ],
+                  ),
+                const SizedBox(height: 18),
+
+                // TOMBOL UTAMA DENGAN SNACKBAR BLUR DI ATAS
+                isAdded
+                    ? OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF9B5364),
+                          side: const BorderSide(color: Color(0xFF9B5364)),
+                        ),
+                        onPressed: () {
+                          libraryController.deleteBook(book.id);
+                          
+                          // POP UP BLUR DI ATAS: Buku Dihapus
+                          _showBlurredSnackbar(
+                            title: 'Library Updated',
+                            message: '${book.title} berhasil dihapus.',
+                            icon: Icons.delete_sweep_rounded,
+                          );
+                        },
+                        icon: const Icon(Icons.delete_outline_rounded),
+                        label: const Text('Remove From Library'),
+                      )
+                    : FilledButton.icon(
+                        onPressed: () {
+                          libraryController.addBook(book);
+                          
+                          // POP UP BLUR DI ATAS: Buku Ditambah
+                          _showBlurredSnackbar(
+                            title: 'Success!',
+                            message: '${book.title} ditambahkan ke Library.',
+                            icon: Icons.check_circle_outline_rounded,
+                          );
+                        },
+                        icon: const Icon(Icons.add_rounded),
+                        label: const Text('Add To Library'),
+                      ),
+                
+                if (isAdded && book.pageCount > 0) ...[
                   const SizedBox(height: 18),
                   _ProgressEditor(book: libraryBook),
+                ],
+                
+                if (isAdded && book.pageCount == 0) ...[
+                  const SizedBox(height: 18),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF8E1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFFFE082)),
+                    ),
+                    child: const Text(
+                      'Informasi halaman tidak tersedia di API, progress tracker dinonaktifkan.',
+                      style: TextStyle(
+                        color: Color(0xFFB78103),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                 ],
               ],
             );
@@ -131,6 +177,33 @@ class DetailPage extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void _showBlurredSnackbar({required String title, required String message, required IconData icon}) {
+    Get.snackbar(
+      title,
+      message,
+      snackPosition: SnackPosition.TOP, // Tetap di atas
+      margin: const EdgeInsets.all(15),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+      
+      // DESAIN BARU: Menggunakan kombinasi opacity dan barBlur bawaan GetX
+      backgroundColor: Colors.white.withValues(alpha: 0.85), // Putih transparan elegan
+      barBlur: 15, // Efek blur native ke elemen di belakang snackbar
+      colorText: const Color(0xFF4B3B3E), // Teks gelap kontras
+      
+      icon: Icon(icon, color: const Color(0xFF4B3B3E)),
+      shouldIconPulse: false,
+      duration: const Duration(seconds: 3),
+      
+      boxShadows: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.08),
+          blurRadius: 12,
+          offset: const Offset(0, 5),
+        )
+      ],
     );
   }
 
@@ -168,43 +241,15 @@ class _MetaChip extends StatelessWidget {
   }
 }
 
-class _ProgressEditor extends StatefulWidget {
+class _ProgressEditor extends StatelessWidget {
   final LibraryBook book;
 
   const _ProgressEditor({required this.book});
 
   @override
-  State<_ProgressEditor> createState() => _ProgressEditorState();
-}
-
-class _ProgressEditorState extends State<_ProgressEditor> {
-  late final TextEditingController _pageController;
-
-  @override
-  void initState() {
-    super.initState();
-    _pageController = TextEditingController(
-      text: widget.book.currentPage.toString(),
-    );
-  }
-
-  @override
-  void didUpdateWidget(covariant _ProgressEditor oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.book.currentPage != widget.book.currentPage) {
-      _pageController.text = widget.book.currentPage.toString();
-    }
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final controller = Get.find<LibraryController>();
+    final pageController = TextEditingController(text: book.currentPage.toString());
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -221,23 +266,24 @@ class _ProgressEditorState extends State<_ProgressEditor> {
             style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17),
           ),
           const SizedBox(height: 12),
+          
           LinearProgressIndicator(
             minHeight: 9,
             borderRadius: BorderRadius.circular(99),
-            value: widget.book.progress,
+            value: book.progress,
             backgroundColor: const Color(0xFFF0DDD5),
             valueColor: const AlwaysStoppedAnimation(Color(0xFF8CA07C)),
           ),
           const SizedBox(height: 8),
           Text(
-            '${widget.book.currentPage} / ${widget.book.pageCount} pages  ${widget.book.progressPercent}%',
+            '${book.currentPage} / ${book.pageCount} pages   ${book.progressPercent}%',
           ),
           const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
                 child: TextField(
-                  controller: _pageController,
+                  controller: pageController,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(labelText: 'Current Page'),
                 ),
@@ -246,8 +292,15 @@ class _ProgressEditorState extends State<_ProgressEditor> {
               IconButton.filled(
                 tooltip: 'Save progress',
                 onPressed: () {
-                  final currentPage = int.tryParse(_pageController.text) ?? 0;
-                  controller.updateProgress(widget.book, currentPage);
+                  final currentPage = int.tryParse(pageController.text) ?? 0;
+                  controller.updateProgress(book, currentPage);
+                  
+                  // POP UP BLUR DI ATAS: Progress Disimpan
+                  DetailPage()._showBlurredSnackbar(
+                    title: 'Progress Saved',
+                    message: 'Progress membaca berhasil diperbarui!',
+                    icon: Icons.save_rounded,
+                  );
                 },
                 icon: const Icon(Icons.save_rounded),
               ),
@@ -255,19 +308,28 @@ class _ProgressEditorState extends State<_ProgressEditor> {
           ),
           const SizedBox(height: 10),
           DropdownButtonFormField<String>(
-            initialValue: widget.book.status,
+            value: book.status,
             decoration: const InputDecoration(labelText: 'Status'),
             items: BookStatus.values
                 .map(
-                  (status) =>
-                      DropdownMenuItem(value: status, child: Text(status)),
+                  (status) => DropdownMenuItem(value: status, child: Text(status)),
                 )
                 .toList(),
             onChanged: (status) {
-              if (status != null) controller.updateStatus(widget.book, status);
+              if (status != null) {
+                controller.updateStatus(book, status);
+                
+                // POP UP BLUR DI ATAS: Status Diubah
+                DetailPage()._showBlurredSnackbar(
+                  title: 'Status Updated',
+                  message: 'Status buku diubah menjadi $status',
+                  icon: Icons.published_with_changes_rounded,
+                );
+              }
             },
           ),
         ],
+        
       ),
     );
   }
@@ -303,7 +365,7 @@ class _InfoBox extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             value,
-            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
+            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
           ),
         ],
       ),

@@ -58,6 +58,29 @@ class NotificationService {
     );
   }
 
+  // Tambahkan fungsi ini di dalam class NotificationService kamu
+static Future<void> showInstantNotification({required String title, required String body}) async {
+  await requestPermission(); // Pastikan izin notifikasi aktif
+  
+  const androidDetails = AndroidNotificationDetails(
+    'reading_reminder', // Harus sama dengan id channel di init()
+    'Reading Reminder',
+    channelDescription: 'Daily reminder to continue reading books.',
+    importance: Importance.high,
+    priority: Priority.high,
+    playSound: true,
+  );
+
+  const notificationDetails = NotificationDetails(android: androidDetails);
+
+  await _notifications.show(
+    DateTime.now().millisecond, // ID unik pakai milidetik biar ga tumpang tindih
+    title,
+    body,
+    notificationDetails,
+  );
+}
+
   static tz.TZDateTime _nextReminderTime() {
     final now = tz.TZDateTime.now(tz.local);
     var scheduled = tz.TZDateTime(tz.local, now.year, now.month, now.day, 19);

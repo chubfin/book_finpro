@@ -45,8 +45,9 @@ class AuthController extends GetxController {
       return;
     }
 
-    username.value = cleanUsername;
-    Get.offAllNamed(AppRoutes.main);
+    // register berhasil → arahkan ke login
+    Get.snackbar('Register berhasil', 'Silakan login dengan akun kamu.');
+    Get.offAllNamed(AppRoutes.login);
   }
 
   Future<void> logout() async {

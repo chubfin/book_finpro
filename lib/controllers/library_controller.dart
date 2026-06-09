@@ -26,7 +26,7 @@ class LibraryController extends GetxController {
 
   bool isAdded(String id) => _box.containsKey(id);
 
-  // ✅ PERBAIKAN: Cari dari RxList 'books' agar dideteksi oleh Obx di UI
+  // ✅ Cari dari RxList 'books' agar dideteksi oleh Obx di UI
   LibraryBook? findById(String id) {
     return books.firstWhereOrNull((book) => book.id == id);
   }
@@ -41,28 +41,45 @@ class LibraryController extends GetxController {
     final libraryBook = LibraryBook.fromBook(book);
     await _box.put(book.id, libraryBook);
     _syncFromHive(); // Paksa sync setelah menambah agar UI langsung update
+    
+    // Mengaktifkan notifikasi harian bawaan aplikasimu
     await NotificationService.scheduleDailyReadingReminder(book.title);
-    Get.snackbar('Added', '${book.title} masuk ke library.');
   }
 
-  Future<void> updateProgress(LibraryBook book, int currentPage) async {
-    book.currentPage = currentPage.clamp(0, book.pageCount);
-    book.status = book.currentPage >= book.pageCount && book.pageCount > 0
-        ? BookStatus.completed
-        : book.currentPage > 0
-        ? BookStatus.currentlyReading
-        : BookStatus.wantToRead;
-    await book.save();
-    books.refresh(); // Memicu Obx untuk memperbarui tampilan progress bar
+  // ✅ SOLUSI FITUR HAPUS: Menambahkan fungsi deleteBook yang dicari oleh DetailPage
+  Future<void> deleteBook(String id) async {
+    if (_box.containsKey(id)) {
+      await _box.delete(id);
+      _syncFromHive(); // Paksa sinkronisasi ulang setelah data dihapus dari Hive
+    }
   }
 
-  Future<void> updateStatus(LibraryBook book, String status) async {
-    book.status = status;
-    if (status == BookStatus.completed && book.pageCount > 0) {
+  // ✅ PERBAIKAN PROGRESS: Sekarang otomatis menyimpan perubahan ke Hive database
+  Future<void> updateProgress(LibraryBook book, int newPage) async {
+    if (newPage >= 0 && newPage <= book.pageCount) {
+      book.currentPage = newPage;
+      
+      // Auto-complete jika halaman yang dibaca sudah mentok
+      if (newPage == book.pageCount) {
+        book.status = 'Completed'; 
+      }
+      
+      // Simpan perubahan object ke dalam database Hive agar permanen
+      await _box.put(book.id, book);
+      books.refresh(); // Memberi tahu Obx di UI untuk menggambar ulang komponen
+    }
+  }
+
+  // ✅ PERBAIKAN STATUS: Sekarang otomatis menyimpan perubahan ke Hive database
+  Future<void> updateStatus(LibraryBook book, String newStatus) async {
+    book.status = newStatus;
+    if (newStatus == 'Completed') {
       book.currentPage = book.pageCount;
     }
-    await book.save();
-    books.refresh(); // Memicu Obx untuk memperbarui status dropdown
+    
+    // Simpan perubahan object ke dalam database Hive agar permanen
+    await _box.put(book.id, book);
+    books.refresh(); // Triggers Obx rebuild
   }
 
   int get totalBooks => books.length;

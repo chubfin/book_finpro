@@ -2,9 +2,6 @@ import 'package:hive/hive.dart';
 
 import 'book.dart';
 
-// Pastikan generated file ditambahkan jika kamu menggunakan build_runner,
-// namun karena kamu pakai manual adapter, baris part di bawah ini opsional (bisa dihapus jika tidak pakai build_runner).
-// part 'library_book.g.dart';
 
 class BookStatus {
   static const wantToRead = 'Want To Read';

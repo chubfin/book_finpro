@@ -45,9 +45,11 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Akun disimpan lokal di perangkat untuk memenuhi fitur local storage.',
-                    style: TextStyle(color: Color(0xFF73656A), height: 1.45),
+                  Text(
+                    'Daftar untuk mulai membaca buku favoritmu.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: const Color(0xFF3B2D2F),
+                    ),
                   ),
                   const SizedBox(height: 28),
                   TextField(
